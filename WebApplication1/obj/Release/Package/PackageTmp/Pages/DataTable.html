@@ -1,0 +1,488 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="../Style/StyleSheetBTN.css" rel="stylesheet" />
+
+    <style type="text/css">
+
+        .header {
+            font-weight: bold;
+            font-size: 20px;
+            text-align: center;
+            width: 100%;
+            background-color: darkblue;
+            color: white;
+        }
+
+
+        h1 {
+            font-weight: bold;
+            text-align: center;
+            font-size: 36px;
+            color: white;
+        }
+
+        /*Navigation menu*/
+        .navbar {
+            overflow: hidden;
+            background-color: darkblue;
+            display: inline-flex;
+        }
+
+        .navbar a {
+            font-size: 20px;
+            padding: 14px 16px;
+            font-weight: bold;
+            color: yellow;
+            text-decoration: none;
+            display: inline-block;
+            width: 30%;
+            color: white;
+        }
+
+        .btn:hover {
+            box-shadow: 0 10px 20px rgb(0,0,0);
+            background-color: white;
+            color: black;
+        }
+
+
+        .btn-white {
+            background-color: darkblue;
+        }
+
+        .colorDiv {
+            height: 30px;
+            width: 70px;
+            border: 2px solid black;
+        }
+
+        #newBTN {
+            background-color: blueviolet;
+            margin-bottom: 10px;
+            margin-top: 10px;
+            margin-right: 100%;
+        }
+
+
+        img {
+            height: 100px;
+            width: 100px;
+        }
+    </style>
+
+
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css">
+
+    <script src="../Scripts/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="../Scripts/ajaxCalls.js"></script>
+    <script src="../Scripts/enterVariable.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            getUserLogin();
+            getCountry();
+            createSelectYears();
+            var deletedID = -1;
+            mode = "";
+
+            $("#cancelSaveBTN").on("click", function () {
+                company = null;
+                $("#editDiv").hide();
+                //if (mode == "new") $("#pForm").show();
+                mode = "";
+            });
+
+            $("#newBTN").on("click", function () {
+                window.location.replace("registerCompany.html");
+            });
+
+
+            // once the document is ready we fetch a list of companies from the server
+            ajaxCall("GET", `../api/Companies`, "", getSuccess, error);
+
+            $("#companiesForm").submit(onSubmitFunc); // wire the submit event to a function called onSubmitFunc
+
+            $("#editDiv").hide();
+
+            buttonEvents();
+        });
+
+        function getCountry() {
+            let apiCall = `https://restcountries.com/v2/all`;
+            ajaxCall("GET", apiCall, "", getCountrySCB, getCountryErrorCB);
+        }
+
+        function getCountrySCB(countries) {
+            countryList = "";
+            for (var i = 0; i < countries.length; i++) {
+                if (countries[i].name != 'Palestine, State of') //Not a country
+                    countryList += '<option value = "' + countries[i].name + '">' + countries[i].name + '</option>';
+            }
+            $("#oprCountry").html(countryList);
+        }
+
+        function getCountryErrorCB(error) {
+            console.log(error);
+        }
+
+        //להפעיל ברגע שהדף נטען.
+        function createSelectYears() {
+            let currentYear = new Date().getFullYear();
+            let str = "";
+            for (let i = 0; i < 101; i++)
+                str += "<option value='" + (currentYear - i) + "' >" + (currentYear - i) + "</option>";
+            $("#year").html(str);
+        }
+
+        // wire all the buttons to their functions
+        function buttonEvents() {
+
+            $(document).on("click", ".editBtn", function () {
+                mode = "edit";
+                markSelected(this);
+                $("#editDiv").show();
+                $("#editDiv :input").prop("disabled", false); // edit mode: enable all controls in the form
+                $("#saveBTN").show();;
+
+                populateFields(this.getAttribute('data-companyId')); // fill the form fields according to the selected row
+            });
+
+            $(document).on("click", ".viewBtn", function () {
+                mode = "view";
+                markSelected(this);
+                $("#editDiv").show();
+                $("#editDiv input").attr("disabled", "disabled"); // view mode: disable all controls in the form
+                $("#editDiv select").attr("disabled", "disabled");
+                $("#saveBTN").hide();
+                $("#cancelSaveBTN").prop("disabled", false); 
+
+                populateFields(this.getAttribute('data-companyId'));
+            });
+
+            $(document).on("click", ".deleteBtn", function () {
+                mode = "delete";
+                markSelected(this);
+                var companyId = this.getAttribute('data-companyId');
+                swal({ // this will open a dialouge
+                    title: "Are you sure ??",
+                    text: "",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true
+                })
+                    .then(function (willDelete) {
+                        if (willDelete) DeleteCompany(companyId);
+                        else swal("Not Deleted!");
+                    });
+            });
+        }
+
+        // mark the selected row
+        function markSelected(btn) {
+            $("#companiesTable tr").removeClass("selected"); // remove seleced class from rows that were selected before
+            row = (btn.parentNode).parentNode; // button is in TD which is in Row
+            row.className = 'selected'; // mark as selected
+        }
+
+        // Delete a car from the server
+        function DeleteCompany(id) {
+            deletedID = id;
+            ajaxCall("DELETE", `../api/Companies/` + id, "", deleteSuccess, error);
+        }
+
+        function onSubmitFunc() {
+
+            var Id = -1;
+            //if (mode == "edit") {
+            Id = company.Id;
+            //}
+
+
+            let companytoSave = {
+                UserName: $("#username").val(),
+                Password: $("#password").val(),
+                CompName: $("#companyName").val(),
+                LogoSrc: $("#image").attr('src'),
+                OprCountry: $("#oprCountry").val(),
+                NumCinemaOwns: $("#cinemaOwnTB").val(),
+                Established: $("#year").val()
+            }
+
+
+            // add a new Company record to the server
+            //if (mode == "edit") {
+            companytoSave.Id = Id;
+            ajaxCall("PUT", `../api/Companies`, JSON.stringify(companytoSave), updateSuccess, error);
+            //}
+            //else if (mode == "new")
+            //    ajaxCall("POST", "../api/Companies", JSON.stringify(companytoSave), insertSuccess, error);
+            return false;
+        }
+
+        // fill the form fields
+        function populateFields(companyId) {
+            company = getCompany(companyId);
+            $("#username").val(company.UserName);
+            $("#password").val(company.Password);
+            $("#companyName").val(company.CompName);
+            $("#numCinemas").val(company.NumCinemaOwns);
+            $("#year").val(company.Established);
+            $("#oprCountry").val(company.OprCountry);
+            $("#image").attr("src",company.LogoSrc);
+        }
+
+
+        // fill the form fields
+        function clearFields() {
+            $("#userName").val("");
+            $("#password").val("");
+            $("#companyName").val("");
+            $("#numCinemas").val("");
+            $("#year").prop('selectedIndex', 0);
+            $("#oprCountry").prop('selectedIndex', 0);
+            $("#image").attr("src", "images/car.jpg");
+        }
+
+        // get a company according to its Id
+        function getCompany(id) {
+            for (i in companies) {
+                if (companies[i].Id == id)
+                    return companies[i];
+            }
+            return null;
+        }
+
+        // success callback function after update
+        function updateSuccess(companiesdata) {
+            tbl.clear();
+            companies = companiesdata; // keep the cars array in a global variable;
+            redrawTable(tbl, companiesdata);
+            buttonEvents();
+            $("#editDiv").hide();
+            swal("Updated Successfuly!", "Great Job", "success");
+            mode = "";
+            updateLocalStoregUsers();
+        }
+
+        // success callback function after update
+        function insertSuccess(companiesdata) {
+            $("#pForm").show();
+            tbl.clear();
+            redrawTable(tbl, companiesdata);
+            buttonEvents();
+            $("#editDiv").hide();
+            swal("Inserted Successfuly!", "Great Job", "success");
+            mode = "";
+        }
+
+        // success callback function after delete
+        function deleteSuccess(companiesdata) {
+            console.log(companiesdata);
+            console.log(companiesdata[0]); 
+            
+            tbl.clear();
+            companies = companiesdata; // keep the companies array in a global variable;
+            redrawTable(tbl, companiesdata);
+            buttonEvents(); // after redrawing the table, we must wire the new buttons
+            $("#editDiv").hide();
+            let id = -1;
+            if (localStorage.getItem("cgroup1") != undefined) {
+                let user = JSON.parse(localStorage.getItem("cgroup1"));
+                id = user.id;
+            }
+
+            deleted = true;
+            //נעבור על מערך החברות, אם לא נמצא את המשתמש העכשווי סימן שהוא נמחק
+            for (let i = 0; i < companiesdata.length; i++) {
+                if (companiesdata[i].Id == id) {
+                    deleted = false;
+                }
+            }
+            if (deleted) {
+                swal("You deleted you company, you are being transfered to login page.");
+                setTimeout(function () {
+                    window.location.replace("login.html");
+                    $("body").prop("disabled", true);
+
+                }, 4000);
+                return;
+            }
+            swal("Deleted Successfuly!", "Great Job", "success");
+            mode = "";
+            updateLocalStoregUsers();
+
+        }
+
+        // redraw a datatable with new data
+        function redrawTable(tbl, data) {
+            tbl.clear();
+            for (var i = 0; i < data.length; i++) {
+                tbl.row.add(data[i]);
+            }
+            tbl.draw();
+        }
+
+        // this function is activated in case of a success
+        function getSuccess(companiesdata) {
+            companies = companiesdata; // keep the cars array in a global variable;
+            try {
+                tbl = $('#companiesTable').DataTable({
+                    data: companiesdata,
+                    pageLength: 5,
+                    columns: [
+                        {
+                            render: function (data, type, row, meta) {
+                                let dataCompany = "data-companyId='" + row.Id + "'";
+
+                                editBtn = "<button type='button'  class = 'editBtn btn btn-success' " + dataCompany + "> Edit </button>";
+                                viewBtn = "<button type='button'  class = 'viewBtn btn btn-info' " + dataCompany + "> View </button>";
+                                deleteBtn = "<button type='button' class = 'deleteBtn btn btn-danger' " + dataCompany + "> Delete </button>";
+                                return editBtn + viewBtn + deleteBtn;
+                            }
+                        },
+                        { data: "Id" },
+                        { data: "UserName" },
+                        { data: "Password" },
+                        { data: "CompName" },
+                        { data: "OprCountry" },
+                        { data: "NumCinemaOwns" },
+                        { data: "Established" },
+                        {
+                            data: "LogoSrc",
+                            visible: false
+                        }
+                    ],
+                });
+
+            }
+
+            catch (err) {
+                alert(err);
+            }
+        }
+
+        // this function is activated in case of a failure
+        function error(err) {
+            swal("Error: " + err);
+        }
+
+        // ajax call to get all users for update local storage.
+        function updateLocalStoregUsers() {
+            user = [];
+
+            let api = `../api/Companies/users`;
+            ajaxCall("GET", api, "", successFuncCB, errorFuncCB);
+        }
+        //כאן נבצע את ה LOGOUTץ
+        function successFuncCB(data) {           
+            console.log(data);
+            let users = [];
+            for (let i = 0; i < data.length; i+=2) {
+                users.push(new User(data[i], data[i + 1]));
+            }
+            console.log(users);
+            localStorage.setItem("cgroup1", JSON.stringify(users));
+        }
+
+        function errorFuncCB(error) {
+            Console("error! " + error);
+        }
+    </script>
+
+</head>
+<body>
+    <div class="header">
+        <h1>Companies</h1>
+        <div class="navbar">
+            <a id="insert" class="btn btn-white btn-animate" href="insert.html">Search</a>
+            <a id="view" class="btn btn-white btn-animate" href="viewMovie.html">Library</a>
+            <a class="btn btn-white btn-animate" href="registerCompany.html">Register</a>
+            <a id="login" class="btn btn-white btn-animate" href="login.html">Login</a>
+            <a id="dataTable" class="btn btn-white btn-animate" href="DataTable.html">Companies</a>
+        </div>
+        <br /><br /><br />
+    </div>
+    <div class="container">
+        <input type="button" value="New" class="btn btn-primary btn-lg" id="newBTN" />
+        <form id="pForm">
+            <table id="companiesTable" class="display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Id</th>
+                        <th>User name</th>
+                        <th>Password</th>
+                        <th>Company name</th>
+                        <th>Operation country</th>
+                        <th>Num of cinemas own</th>
+                        <th>Year establish</th>
+                    </tr>
+                </thead>
+            </table>
+        </form>
+
+
+        <div id="editDiv">
+            <form id="companiesForm">
+                <div class="form-group row">
+
+                    <div class="form-group col-sm-4">
+                        <label for="username"><span class="red-star">★ </span>User name</label>
+                        <input type="text" class="form-control" id="username" placeholder="Enter the user name" required>
+                    </div>
+
+                    <div class="form-group col-sm-4">
+                        <label for="password"><span class="red-star">★ </span>Password</label>
+                        <input type="text" class="form-control" id="password" placeholder="Enter the password" required />
+                    </div>
+
+
+                    <div class="form-group col-sm-4">
+                        <label for="year"><span class="red-star">★ </span>Establised year</label>
+                        <select id="year" class="form-control" required></select>
+                    </div>
+
+
+                </div>
+
+                <div class="form-group row">
+                    <div class="form-group col-sm-4">
+                        <label for="companyName"><span class="red-star">★ </span>Company name</label>
+                        <input type="text" class="form-control" id="companyName" placeholder="Enter the company name" required>
+                    </div>
+
+                    <div class="form-group col-sm-4">
+                        <label for="numCinemas"><span class="red-star">★ </span>Number of cinemas</label>
+                        <input type="number" class="form-control" id="numCinemas" placeholder="Enter the number of cinemas" required />
+                    </div>
+
+                    <div class="form-group col-sm-4">
+                        <label for="oprCountry"><span class="red-star">★ </span>Operation Country</label>
+                        <select id="oprCountry" class="form-control" required></select>
+                    </div>
+
+                </div>
+
+                <div class="form-group col-sm-4">
+                    <img src="" id="image" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" id="saveBTN">Save</button>
+                <input type="button" class="btn btn-warning btn-lg" id="cancelSaveBTN" value="Cancel" />
+            </form>
+        </div>
+    </div>
+</body>
+</html>

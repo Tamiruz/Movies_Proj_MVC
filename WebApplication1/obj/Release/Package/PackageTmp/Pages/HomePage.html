@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="../Style/StyleSheet.css" rel="stylesheet" />
+    <link href="../Style/StyleSheetBTN.css" rel="stylesheet" />
+    <script src="../Scripts/jquery-3.3.1.min.js"></script>
+    <script src="../Scripts/enterVariable.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            setUserLogin(false);
+            getUserLogin();
+        });
+
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1 class="regHeader">Welcome</h1>
+        <div class="navbar">
+            <a id="insert" class="btn btn-white btn-animate" href="insert.html">Search</a>
+            <a id="view" class="btn btn-white btn-animate" href="viewMovie.html">Library</a>
+            <a class="btn btn-white btn-animate" href="registerCompany.html">Register</a>
+            <a class="btn btn-white btn-animate" href="login.html">Login</a>
+            <a id="dataTable" class="btn btn-white btn-animate" href="DataTable.html">Companies</a>
+        </div>
+        <br />
+    </div>
+</body>
+</html>

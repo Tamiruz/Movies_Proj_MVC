@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+
+    <link href="../Style/StyleSheet.css" rel="stylesheet" />
+    <link href="../Style/StyleSheetBTN.css" rel="stylesheet" />
+    <style>
+        #divIMG img {
+            height: 200px;
+            width: 200px;
+        }
+
+        table {
+            border-spacing: 80px 10px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        td input {
+            width: 200px;
+        }
+
+        select {
+            width: 200px;
+        }
+
+        input[type=file] {
+            width: 200px;
+        }
+
+        input[type=submit] {
+            width: 200px;
+            border-radius: 10px;
+            border-color: black;
+            background-color: yellow;
+            font-weight: bold;
+        }
+
+        input[type=text]:focus {
+            border: 3px solid #f00;
+        }
+
+        #btns {
+            position: absolute;
+        }
+    </style>
+
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="../Scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="sweetalert.all.min.js"></script>
+    <script src="../Scripts/ajaxCalls.js"></script>
+    <script src="../Scripts/enterVariable.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            getUserLogin();
+            
+            $("#companyFRM").submit(submitCompany);
+            $("#logo").on('change', showImage);
+            $("#divIMG").html("<img src='../ImagesRegister/your_logo.jpg' />");
+
+            getCountry();
+            createSelectYears();
+        });
+
+        //להפעיל ברגע שהדף נטען.
+        function getCountry() {
+            let apiCall = `https://restcountries.com/v2/all`;
+            ajaxCall("GET", apiCall, "", getCountrySCB, getCountryErrorCB);
+        }
+
+        //להפעיל ברגע שהדף נטען.
+        function createSelectYears() {
+            let currentYear = new Date().getFullYear();
+            let str = "";
+            for (let i = 0; i < 101; i++)
+                str += "<option value='" + (currentYear - i) + "' >" + (currentYear - i) + "</option>";
+            $("#selectYear").html(str);
+        }
+
+        function getCountrySCB(countries) {
+            countryList = "";
+            for (var i = 0; i < countries.length; i++) {
+                if (countries[i].name != 'Palestine, State of') //Not a country
+                    countryList += '<option value = "' + countries[i].name + '">' + countries[i].name + '</option>';
+            }
+            $("#selectCountry").html(countryList);
+        }
+
+        function getCountryErrorCB(error) {
+            console.log(error);
+        }
+
+        function submitCompany() {
+            //Upload image.
+            var data = new FormData();
+            var file = $("#logo").get(0).files;
+
+            data.append("uploadedImage", file[0]);
+            data.append("name", $("#compTB").val());
+
+            $.ajax({
+                type: "POST",
+                url: `../api/FileUpload`,
+                contentType: false,
+                processData: false,
+                data: data,
+                success: success,
+                error: error
+            });
+            return false;
+        }
+
+        function companySCB(status) {
+            console.log("success company add");
+            swal(status + "!");
+            users = [];
+            clear();
+        }
+
+        function clear() {
+            $("#userTB").val("");
+            $("#pass").val("");
+            $("#compTB").val("");
+            $("#cinemaOwnTB").val("");
+            $("#selectCountry").prop('selectedIndex', 0);
+            $("#selectYear").prop('selectedIndex', 0);
+            $("#logo").val("");
+            $("#divIMG").html("<img src='../ImagesRegister/your_logo.jpg' />");
+
+        }
+
+        function companyECB(error) {
+            swal(error + "!");
+        }
+
+        function success(arr) {
+            console.log("success file added");
+
+            var c = {
+                UserName: $("#userTB").val(),
+                Password: $("#pass").val(),
+                CompName: $("#compTB").val(),
+                LogoSrc: "../" + arr[0],
+                OprCountry: $("#selectCountry").val(),
+                NumCinemaOwns: $("#cinemaOwnTB").val(),
+                Established: $("#selectYear").val()
+            }
+
+            let api = `../api/Companies`;
+
+            ajaxCall("POST", api, JSON.stringify(c), companySCB, companyECB);
+
+            return false;
+        }
+
+        function error(status) {
+            console.log(status);
+        }
+        function showImage() {
+            var input = document.getElementById("logo");
+            var fReader = new FileReader();
+            fReader.readAsDataURL(input.files[0]);
+            fReader.onloadend = function (event) {
+                let str = "<img src='" + event.target.result + "'/>";
+                $("#divIMG").html(str);
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="regHeader">Registration</h1>
+        <div class="navbar">
+            <a id="insert" class="btn btn-white btn-animate" href="insert.html">Search</a>
+            <a id="view" class="btn btn-white btn-animate" href="viewMovie.html">Library</a>
+            <a class="btn btn-white btn-animate" href="registerCompany.html">Register</a>
+            <a id="login" class="btn btn-white btn-animate" href="login.html">Login</a>
+            <a id="dataTable" class="btn btn-white btn-animate" href="DataTable.html">Companies</a>
+
+        </div>
+        <br />
+    </div>
+
+    
+    <form id="companyFRM" action="">
+        <table id="regTable">
+            <tr>
+                <td>★ Username: </td>
+                <td>★ Password:</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <input type="text" id="userTB" placeholder="Enter username" required minlength="3" maxlength="15" />
+                </td>
+                <td>
+                    <input type="Password" id="pass" placeholder="Enter password" required minlength="8" maxlength="20" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>★ Company Name: </td>
+                <td>★ Cinemas I own:  </td>
+                
+
+            </tr>
+
+            <tr>
+                <td>
+                    <input type="text" id="compTB" placeholder="Enter Company Name" required minlength="1" maxlength="20" />
+                </td>
+                <td>
+                    <input type="number" id="cinemaOwnTB" placeholder="Number of Cinemas" required min="0" />
+                </td>
+                
+            </tr>
+
+            <tr>
+                <td>★ Operation Country: </td>
+                <td>★ Year established:   </td>
+
+
+            </tr>
+
+            <tr>
+                <td>
+                    <select id="selectCountry"></select>
+                </td>
+                
+                <td>
+                    <select id="selectYear"></select>
+                </td>
+            </tr>
+
+            <tr>
+                
+                <td colspan="2">★ Logo Picture:  </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <input type="file" id="logo" placeholder="Choose Picture" required />
+                    <div id="divIMG"></div>
+                </td>
+            </tr>
+            <tr></tr>
+
+            <tr>
+                <td></td>
+            </tr>
+
+        </table>
+        <input type="submit" id="btnSubmit" value="Submit" />
+    </form>
+</body>
+</html>

@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Get Movie</title>
+    <link href="../Style/StyleSheet.css" rel="stylesheet" />
+    <link href="../Style/StyleSheetBTN.css" rel="stylesheet" />
+    <style>
+
+        img {
+            height: 250px;
+            width: 150px;
+        }
+
+        div {
+            background-color: black;
+        }
+
+        .imgTag {
+            position: relative;
+            right: 100px;
+        }
+
+        .header {
+            height: 50px;
+        }
+
+        select {
+            border-radius: 6px;
+            border-color: black;
+            background-color: darkslategray;
+            font-weight: bold;
+        }
+    </style>
+
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="../Scripts/jquery-3.3.1.min.js"></script>
+    <script src="../Scripts/ajaxCalls.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous">
+    </script>
+    <script src="../Scripts/enterVariable.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            getUserLogin();
+            let id = -1;
+            if (localStorage.getItem("cgroup1") != undefined) {
+                let user = JSON.parse(localStorage.getItem("cgroup1"));
+                id = user.id;
+            }
+            else {
+                swal("You need to log in");
+                window.location.replace("login.html");
+            }
+            console.log(id);
+            let url = `../api/Movies/list/${id}`;
+
+            ajaxCall("GET", url, "", getMoviesSCB, getMoviesECB);
+            $("#chooseBTN").click(getMovieByID);
+        });
+
+        var id = null;
+        function animationImg(start) {
+            var div = $(".imgTag");
+            var pos = start;
+            clearInterval(id);
+            id = setInterval(function () {
+                if (pos == 0 || pos == 360)
+                    clearInterval(id);
+                else if (start == 350) {
+                    pos -= 10;
+                    div.css("left", pos + 'px');
+                }
+                else {
+                    pos += 10;
+                    div.css("left", pos + 'px');
+                }
+                if (pos == 360)
+                    animationImg(350);
+            }, 10);
+        }
+
+        function getMoviesSCB(movies) {
+            console.log(movies);
+            str = "<option value ='0'>Choose a movie</option>";
+            for (var i = 0; i < movies.length; i++)
+                str += '<option value = "' + movies[i].Id + '">' + movies[i].Name + '</option>';
+            $("#moviesList").html(str);
+        }
+
+        function getMoviesECB(error) {
+            console.log(error);
+        }
+
+
+        function getMovieByID() {
+            let id = $("#moviesList").find(":selected").val();
+            if (id == 0) {
+                swal("Please choose a movie!");
+                return;
+            }
+
+            let api = `../api/Movies/${id}`;
+            ajaxCall("GET", api, "", getMovieByIDSuccessCB, getMovieByIDErrorCB);
+        }
+
+        function getMovieByIDErrorCB(error) {
+            console.log(error);
+        }
+
+        function getMovieByIDSuccessCB(movie) {
+            console.log(movie);
+            if (movie.Id == undefined || movie.Name == undefined || movie.Genre == undefined || movie.Publish == undefined || movie.Avg_sc == undefined || movie.Src == undefined || movie.Descr == undefined) {
+                swal("Some details about this movie is missing. Please try other movies.");
+
+                return;
+            }
+            str = "<p>" + "Title: " + movie.Name + "</p> <p>Overview: " + movie.Descr + "</p> <p>Release date: " + movie.Publish + "</p>  <p>Average score: " + movie.Avg_sc + "</p> <p>Genres: ";
+            if (movie.Genre != "") 
+                str += movie.Genre + ".</p>";
+            else str += "None.</p>";
+            $("#overView").html(str);
+
+
+            let src = "https://image.tmdb.org/t/p/original" + movie.Src;
+            let img = "<img class='imgTag' src='" + src + "' />";
+            $("#imgM").html(img);
+
+            animationImg(10);
+
+
+        }
+
+
+
+
+    </script>
+
+</head>
+<body>
+    <div class="header">
+
+        <h1>Library</h1>
+        <div class="navbar">
+            <a class="btn btn-white btn-animate" href="insert.html">Search</a>
+            <a class="btn btn-white btn-animate" href="viewMovie.html">Library</a>
+            <a class="btn btn-white btn-animate" href="registerCompany.html">Register</a>
+            <a id="login" class="btn btn-white btn-animate" href="login.html">Login</a>
+            <a id="dataTable" class="btn btn-white btn-animate" href="DataTable.html">Companies</a>
+
+        </div>
+        <br />
+        Movie name:   
+        <select id="moviesList"> </select>
+        <button id="chooseBTN"> Choose</button>
+        <br /><br />
+        <div id="imgM"></div>
+        <div id="overView"></div>
+
+    </div>
+
+    <div id="imgM"></div>
+    <div id="overView"></div>
+
+</body>
+</html>

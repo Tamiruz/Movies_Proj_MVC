@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Movie</title>
+    <link href="../Style/StyleSheet.css" rel="stylesheet" />
+    <link href="../Style/StyleSheetBTN.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+
+        .movie {
+            background-image: url("Images/back.png");
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 350px;
+            width: 250px;
+            margin-left: 10px;
+            margin-top: 10px;
+            padding-left: 50px;
+            padding-right: 50px;
+            text-align: center;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .details {
+            height: 350px;
+            width: 79%;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 3%;
+            display: inline-block;
+            background-color: black;
+        }
+
+        .img {
+            height: 350px;
+            width: 15%;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: inline-block;
+            float: left;
+            margin-left: 3%;
+        }
+
+            .img img {
+                height: 100%;
+                width: 100%;
+            }
+
+        div div {
+            text-align: left;
+            background-color: darkslategray;
+        }
+
+        input {
+            background-color: darkslategray;
+            height: 20px;
+            width: 200px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        table {
+            text-align: center;
+        }
+
+        .movie > img {
+            height: 60%;
+        }
+
+        #ph {
+            position: relative;
+            padding-left: 10%;
+            padding-right: 10%;
+        }
+    </style>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="../Scripts/ajaxCalls.js"></script>
+    <script src="../Scripts/jquery-3.3.1.min.js"></script>
+    <script src="../Scripts/enterVariable.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            getUserLogin();
+            $("#searchBTN").click(getMovie);
+            $("#up").click(function () { $(window).scrollTop(0); });
+        });
+
+        function getMovie() {
+            let name = $("#txt1").val();
+            let key = "6503a74b13f135c0f74db08bafc4071c";
+
+            let apiCall = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${name}`;
+
+            ajaxCall("GET", apiCall, "", getMovieSuccessCB, getMovieErrorCB);
+        }
+
+        function getMovieSuccessCB(movies) {
+            movies = movies.results;
+            let path = "https://image.tmdb.org/t/p/original";
+            let str = "<div id='imgM'></div><div id='desc'></div>";
+            for (var i = 0; i < movies.length; i++) {
+                let src = path + movies[i].poster_path;
+                let title = movies[i].title;
+                str += "<div class = 'movie' > ";
+                str += `<h4> ${title} </h4>`;
+                str += `<img src = '${src}' />`;
+                str += "</br><button id='" + movies[i].id + "' onclick ='getMovieByID(" + movies[i].id + ")' class='btn'><i class='fa fa-bars'></i> Details</button></div>";
+            }
+
+            $("#ph").html(str);
+        }
+
+        function getMovieErrorCB(err) {
+            console.log(err);
+        }
+
+        function getMovieByID(id) {
+            let key = "6503a74b13f135c0f74db08bafc4071c";
+            let apiCall = `https://api.themoviedb.org/3/movie/${id}?api_key=${key}`;
+            ajaxCall("GET", apiCall, "", getMovieByIDSuccessCB, getMovieByIDErrorCB);
+        }
+
+        function getMovieByIDSuccessCB(movie) {
+            let gen = "";
+            if (movie.id == undefined || movie.title == undefined || movie.genres == undefined || movie.release_date == undefined || movie.vote_average == undefined || movie.poster_path == undefined || movie.overview == undefined) {
+                swal("Some details about this movie is missing. Please try other movies.");
+
+                return;
+            }
+            str = "<p>" + "Title: " + movie.title + "</p> <p>Overview: " + movie.overview + "</p> <p>Release date: " + movie.release_date + "</p>  <p>Average score: " + movie.vote_average + "</p> <p>Genres: ";
+            if (movie.genres.length > 1) {
+                for (var i = 0; i < movie.genres.length - 2; i++) {
+                    str += movie.genres[i].name + ", ";
+                    gen += movie.genres[i].name + ", ";
+                }
+                gen += movie.genres[i].name + ", ";
+                gen += movie.genres[i + 1].name;
+                str += movie.genres[i].name + " and " + movie.genres[i + 1].name + ". </p>";
+            }
+            else if (movie.genres.length == 1) {
+                str += movie.genres[0].name + ".</p>";
+                gen = movie.genres[0].name;
+            }
+            else str += "None.</p>";
+
+            str += "<button id = 'a" + movie.id + "' class='btn'><i class='fa fa-folder'></i> Add</button>";
+            str += "<button id = 'close' class='btn'><i class='fa fa-close'></i> Close</button>";
+            $("#desc").html(str);
+            $("#desc").attr('class', 'details');
+
+            let src = "https://image.tmdb.org/t/p/original" + movie.poster_path;
+            let img = "<img src='" + src + "' />";
+            $("#imgM").html(img);
+            $("#imgM").show();
+            $("#desc").show();
+
+            let m = {
+                Id: movie.id,
+                Name: movie.title,
+                Genre: gen,
+                Publish: movie.release_date,
+                Avg_sc: movie.vote_average,
+                Src: movie.poster_path,
+                Descr: movie.overview
+            }
+
+            $("#a" + movie.id).click(function () {
+                
+                let api = "../api/Movies";
+                ajaxCall("POST", api, JSON.stringify(m), insertSCB, insertECB);
+            });
+
+            $("#close").click(function () {
+                $("#imgM").hide();
+                $("#desc").hide();
+            });
+
+            $(window).scrollTop(0);
+            var div = $("#imgM");
+            div.animate({ width: '0%', opacity: '0.03' }, "fast");
+            div.animate({ width: '1.5%', opacity: '0.1' }, "slow");
+            div.animate({ width: '3%', opacity: '0.2' }, "slow");
+            div.animate({ width: '15%', opacity: '1' }, "slow");
+            div.attr('class', 'img');
+
+        }
+        function insertcmSCB(status) {
+            console.log(status);
+            if (status == 0)
+                swal("Movie already added!");
+            else swal("Movie added successfully!");
+            
+        }
+
+        function insertcmECB(err) {
+            console.log(err);
+        }
+
+        function insertSCB(movieId) {
+            console.log(movieId);
+            let id = -1;
+            if (localStorage.getItem("cgroup1") != undefined) {
+                let user = JSON.parse(localStorage.getItem("cgroup1"));
+                id = user.id;
+            }
+            else {
+                swal("You need to log in");
+                window.location.replace("login.html");
+            }
+            let cm = {
+                IdC: id,
+                IdM: movieId
+            };
+            api = "../api/C_M";
+            ajaxCall("POST", api, JSON.stringify(cm), insertcmSCB, insertcmECB);
+        }
+
+        function insertECB(err) {
+            console.log(err);
+        }
+
+        function getMovieByIDErrorCB(err) {
+            console.log(err);
+        }
+    </script>
+</head>
+<body>
+    <h1>Movies DB</h1>
+    <br />
+    <div class="header">
+
+        <div class="navbar">
+            <a class="btn btn-white btn-animate" href="insert.html">Search</a>
+            <a class="btn btn-white btn-animate" href="viewMovie.html">Library</a>
+            <a class="btn btn-white btn-animate" href="registerCompany.html">Register</a>
+            <a id="login" class="btn btn-white btn-animate" href="login.html">Login</a>
+            <a id="dataTable" class="btn btn-white btn-animate" href="DataTable.html">Companies</a>
+
+        </div>
+        <br /><br />
+        Movie name:
+        <input type="text" id="txt1" />
+        <button id="searchBTN" class="btn">Search</button>
+        <br /><br />
+    </div>
+
+
+
+    <div id="ph">
+    </div>
+
+    <div id="scrollUp"><button id="up"> <i class="arrow up"></i></button></div>
+
+</body>
+</html>

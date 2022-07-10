@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="../Style/StyleSheet.css" rel="stylesheet" />
+    <link href="../Style/StyleSheetBTN.css" rel="stylesheet" />
+    <style>
+        .loginTable {
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <script src="../Scripts/jquery-3.3.1.min.js"></script>
+    <script src="../Scripts/enterVariable.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="../Scripts/ajaxCalls.js"></script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            getAllUsers();
+            setUserLogin(false);
+            getUserLogin();
+        });
+
+        users = [];
+        // get all users from localstorage.
+        function checkLogin() {
+            for (var i = 0; i < users.length; i++) {
+
+                if ((users[i].name).localeCompare($("#userTB").val()) == 0 && (users[i].password).localeCompare($("#passTB").val()) == 0) {
+                    swal("Succesfully entered");
+                    setUserLogin(true);
+                    username = $("#userTB").val();
+                    password = $("#passTB").val();
+
+                    localStorage.setItem("cgroup1", JSON.stringify(users[i]));
+                    
+                    enableHref();
+                    $("#login").html("Log out");
+                    $("#userTB").hide()
+                    $("#passTB").hide()
+                    $("#loginBTN").hide();
+                    $('.loginTable').each(function () {
+                        $(this).hide();
+                    });
+
+                    window.location.replace("insert.html");
+
+                    return;
+                }
+            }
+            swal("You are not registered.");
+
+            return;
+        }
+
+        // ajax call to get all users for update local storage.
+        function getAllUsers() {
+            let api = `../api/Companies/users`;
+            ajaxCall("GET", api, "", successFuncCB, errorFuncCB);
+        }
+
+        function successFuncCB(data) {
+            for (let i = 0; i < data.length; i += 3) 
+                users.push(new User(data[i], data[i + 1], data[i + 2]));
+        }
+
+        function errorFuncCB(error) {
+            console("error! " + error);
+        }
+
+        
+
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1 class="regHeader">Login</h1>
+        <div class="navbar">
+            <a id="insert" class="btn btn-white btn-animate" href="insert.html">Search</a>
+            <a id="view" class="btn btn-white btn-animate" href="viewMovie.html">Library</a>
+            <a class="btn btn-white btn-animate" href="registerCompany.html">Register</a>
+            <a id="login" class="btn btn-white btn-animate" href="login.html">Login</a>
+            <a id="dataTable" class="btn btn-white btn-animate" href="DataTable.html">Companies</a>
+
+
+        </div>
+        <br />
+    </div>
+    <table class="loginTable">
+        <tr>
+            <td>Username</td>
+            <td><input type="text" id="userTB" placeholder="Enter username" required minlength="3" maxlength="15" /></td>
+
+        </tr>
+        <tr>
+            <td>Password</td>
+            <td><input type="password" id="passTB" placeholder="Enter password" required minlength="8" maxlength="20" /></td>
+        </tr>
+    </table>
+    <input type="button" id="loginBTN" value="Login" onclick="checkLogin()" />
+
+</body>
+</html>
