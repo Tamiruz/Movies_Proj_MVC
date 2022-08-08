@@ -169,7 +169,7 @@
 
             $("#a" + movie.id).click(function () {
                 
-                let api = `../api/Movies`;
+                let api = "../api/Movies";
                 ajaxCall("POST", api, JSON.stringify(m), insertSCB, insertECB);
             });
 
@@ -214,7 +214,7 @@
                 IdC: id,
                 IdM: movieId
             };
-            api = `../api/C_M`;
+            api = "../api/C_M";
             ajaxCall("POST", api, JSON.stringify(cm), insertcmSCB, insertcmECB);
         }
 

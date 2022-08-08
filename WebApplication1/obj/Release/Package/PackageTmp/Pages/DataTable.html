@@ -111,7 +111,7 @@
 
 
             // once the document is ready we fetch a list of companies from the server
-            ajaxCall("GET", `../api/Companies`, "", getSuccess, error);
+            ajaxCall("GET", "../api/Companies", "", getSuccess, error);
 
             $("#companiesForm").submit(onSubmitFunc); // wire the submit event to a function called onSubmitFunc
 
@@ -200,7 +200,7 @@
         // Delete a car from the server
         function DeleteCompany(id) {
             deletedID = id;
-            ajaxCall("DELETE", `../api/Companies/` + id, "", deleteSuccess, error);
+            ajaxCall("DELETE", "../api/Companies/" + id, "", deleteSuccess, error);
         }
 
         function onSubmitFunc() {
@@ -225,7 +225,7 @@
             // add a new Company record to the server
             //if (mode == "edit") {
             companytoSave.Id = Id;
-            ajaxCall("PUT", `../api/Companies`, JSON.stringify(companytoSave), updateSuccess, error);
+            ajaxCall("PUT", "../api/Companies", JSON.stringify(companytoSave), updateSuccess, error);
             //}
             //else if (mode == "new")
             //    ajaxCall("POST", "../api/Companies", JSON.stringify(companytoSave), insertSuccess, error);
@@ -383,7 +383,7 @@
         function updateLocalStoregUsers() {
             user = [];
 
-            let api = `../api/Companies/users`;
+            let api = "../api/Companies/users";
             ajaxCall("GET", api, "", successFuncCB, errorFuncCB);
         }
         //כאן נבצע את ה LOGOUTץ

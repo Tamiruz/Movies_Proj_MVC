@@ -59,7 +59,7 @@
 
         // ajax call to get all users for update local storage.
         function getAllUsers() {
-            let api = `../api/Companies/users`;
+            let api = "../api/Companies/users";
             ajaxCall("GET", api, "", successFuncCB, errorFuncCB);
         }
 
@@ -69,7 +69,7 @@
         }
 
         function errorFuncCB(error) {
-            console("error! " + error);
+            console.log("error! " + error);
         }
 
         

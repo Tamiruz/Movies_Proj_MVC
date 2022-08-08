@@ -104,7 +104,7 @@
 
             $.ajax({
                 type: "POST",
-                url: `../api/FileUpload`,
+                url: "../api/FileUpload",
                 contentType: false,
                 processData: false,
                 data: data,
@@ -150,7 +150,7 @@
                 Established: $("#selectYear").val()
             }
 
-            let api = `../api/Companies`;
+            let api = '../api/Companies';
 
             ajaxCall("POST", api, JSON.stringify(c), companySCB, companyECB);
 
