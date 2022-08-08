@@ -113,5 +113,26 @@ namespace WebApplication1.Models
             return ds.getAllUsers();
         }
 
+        public override int GetHashCode()
+        {
+            var hashCode = -283721948;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(userName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(password);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(compName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(logoSrc);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(oprCountry);
+            hashCode = hashCode * -1521134295 + numCinemaOwns.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(established);
+            hashCode = hashCode * -1521134295 + id.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(UserName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Password);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CompName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(LogoSrc);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OprCountry);
+            hashCode = hashCode * -1521134295 + NumCinemaOwns.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Established);
+            hashCode = hashCode * -1521134295 + Id.GetHashCode();
+            return hashCode;
+        }
     }
 }
