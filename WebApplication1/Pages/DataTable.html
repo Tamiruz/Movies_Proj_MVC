@@ -92,6 +92,14 @@
 
     <script>
         $(document).ready(function () {
+            let userLogin = JSON.parse(localStorage.getItem("cgroup1_userLogin"));
+            if (!userLogin) {
+                $("#companiesTable").hide();
+            }
+            else {
+                $("#companiesTable").show();
+
+            }
             getUserLogin();
             getCountry();
             createSelectYears();
