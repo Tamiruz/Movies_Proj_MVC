@@ -33,7 +33,6 @@
         }
     </style>
 
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="../Scripts/jquery-3.3.1.min.js"></script>
     <script src="../Scripts/ajaxCalls.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
@@ -41,6 +40,8 @@
             crossorigin="anonymous">
     </script>
     <script src="../Scripts/enterVariable.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 
     <script>
 
@@ -52,8 +53,17 @@
                 id = user.id;
             }
             else {
-                swal("You need to log in");
-                window.location.replace("login.html");
+                swal({ // this will open a dialouge
+                    title: "You need to log in",
+                    text: "Press ok to log in.",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true
+                })
+                    .then(function (ok) {
+                        if (ok) location.replace("login.html");
+                        else swal("You are not logged!");
+                    });
             }
             console.log(id);
             let url = `../api/Movies/list/${id}`;
@@ -119,7 +129,7 @@
                 return;
             }
             str = "<p>" + "Title: " + movie.Name + "</p> <p>Overview: " + movie.Descr + "</p> <p>Release date: " + movie.Publish + "</p>  <p>Average score: " + movie.Avg_sc + "</p> <p>Genres: ";
-            if (movie.Genre != "") 
+            if (movie.Genre != "")
                 str += movie.Genre + ".</p>";
             else str += "None.</p>";
             $("#overView").html(str);
