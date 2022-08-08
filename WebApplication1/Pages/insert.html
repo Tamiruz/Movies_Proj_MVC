@@ -207,8 +207,17 @@
                 id = user.id;
             }
             else {
-                swal("You need to log in");
-                window.location.replace("login.html");
+                swal({ // this will open a dialouge
+                    title: "You need to log in",
+                    text: "Press ok to log in.",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true
+                })
+                    .then(function (ok) {
+                        if (ok) location.replace("login.html");
+                        else swal("You are not logged!");
+                    });      
             }
             let cm = {
                 IdC: id,

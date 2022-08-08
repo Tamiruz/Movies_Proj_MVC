@@ -56,8 +56,28 @@
 
     <script>
         $(document).ready(function () {
-            getUserLogin();
-            
+            //getUserLogin();
+            let userLogin = null;
+            if (localStorage.getItem("cgroup1_userLogin") != undefined) {
+                userLogin = JSON.parse(localStorage.getItem("cgroup1_userLogin"));
+                if (userLogin) {
+                    $("#login").html("Logout");
+                    swal({ // this will open a dialouge
+                        title: "You are already logged in",
+                        text: "Press ok to log out.",
+                        icon: "warning",
+                        buttons: true,
+                        dangerMode: true
+                    })
+                        .then(function (ok) {
+                            if (ok) {
+                                setUserLogin(false);
+                                location.replace("registerCompany.html");
+                            }
+                            else location.replace("insert.html");
+                        });
+                }
+            }
             $("#companyFRM").submit(submitCompany);
             $("#logo").on('change', showImage);
             $("#divIMG").html("<img src='../ImagesRegister/your_logo.jpg' />");

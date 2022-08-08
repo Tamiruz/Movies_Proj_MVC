@@ -10,16 +10,23 @@ function enableHref() {
 }
 
 function alertLogin() {
-    alert("You need to login or register"); //swalalalalalalala dance!
+    alert("you need to log in!"); 
 }
 
 function disableHref() {
-    $("#view").attr("href", "");
-    $("#insert").attr("href", "");
-    $("#insert").click(alertLogin);
-    $("#view").click(alertLogin);
-    $("#dataTable").attr("href", "");
-    $("#dataTable").click(alertLogin);
+    swal({ // this will open a dialouge
+        title: "You need to log in",
+        text: "Press ok to log in.",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true
+    })
+        .then(function (ok) {
+            if (ok) location.replace("login.html");
+            else {
+                location.replace("login.html");
+            }
+        }); 
 }
 
 function getUserLogin() {
